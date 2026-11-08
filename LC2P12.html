@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLAYTOEIC LC2P12</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1a8cff;
+    --blue-soft: #3a9bff;
+    --bg: #eceef5;
+    --card: #ffffff;
+    --ink: #1f2430;
+    --muted: #8a90a0;
+    --line: #d9dce6;
+    --green: #3ccb3c;
+    --red: #e5484d;
+    --panel: #1d2433;
+    --panel-btn: #2a3347;
+
+    /* ============ THÔNG SỐ TÙY CHỈNH – chỉnh số ở đây ============ */
+    --vi-gap: 10px;            /* khoảng cách giữa đáp án tiếng Anh và phần dịch tiếng Việt */
+    --q-label-size: 14px;      /* cỡ chữ "Question … of 31" */
+    --q-circle: 30px;          /* vòng tròn số câu hiện tại */
+    --topbar-h: 50px;          /* chiều cao thanh trên cùng */
+    --panel-w: 270px;          /* độ rộng cột cố định (bảng số câu bên phải) */
+    --panel-cell-h: 32px;      /* chiều cao mỗi ô số câu */
+    --panel-cell-font: 14px;   /* cỡ chữ số trong ô */
+    --panel-gap: 6px;          /* khoảng cách giữa các ô số câu */
+    --wm-size: 9vw;            /* cỡ chữ watermark */
+    --wm-color: rgba(100,110,130,.14);   /* màu watermark (xám nhạt, chỉnh số cuối để đậm/nhạt) */
+    --wm-angle: -30deg;        /* độ nghiêng watermark */
+    /* ============================================================ */
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
+  button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  button:focus-visible, input:focus-visible { outline: 3px solid rgba(26,140,255,.45); outline-offset: 2px; }
+
+  /* ===== Top bar ===== */
+  .topbar {
+    height: var(--topbar-h); flex: none; background: #fff; padding: 0 14px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    border-bottom: 1px solid #e4e6ee; position: relative; z-index: 5;
+  }
+  .topbar .center { display: flex; justify-content: center; align-items: center; gap: 7px; font-size: var(--q-label-size); }
+  .qcircle {
+    width: var(--q-circle); height: var(--q-circle); border-radius: 50%;
+    background: var(--blue-soft); color: #fff; font-weight: 500;
+    display: grid; place-items: center; font-size: calc(var(--q-label-size) + 1px);
+  }
+  .qcircle:hover { background: var(--blue); }
+  .topright { justify-self: end; }
+  .top-admin { background: var(--blue); color: #fff; font-size: 15px; font-weight: 500; padding: 8px 18px; border-radius: 10px; white-space: nowrap; }
+  .top-admin:hover { background: #0a7bf0; }
+
+  /* ===== Body ===== */
+  .layout { flex: 1; display: flex; min-height: 0; position: relative; }
+  .main { flex: 1; overflow-y: auto; padding: 24px 40px 36px; transition: margin .22s ease; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+
+  .player {
+    background: #fff; height: 76px; padding: 0 14px; border-radius: 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .circ {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid #e3e5ec; background: #fff;
+    display: grid; place-items: center; font-size: 16px; color: #3b4252;
+  }
+  .circ svg { width: 22px; height: 22px; fill: #3b4252; }
+  .bar {
+    flex: 1; margin: 0 14px; position: relative; height: 24px;
+    display: flex; align-items: center;
+  }
+  .bar input[type=range] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 10px; border-radius: 6px;
+    background: linear-gradient(to right, #00aaff var(--p, 0%), #d3d6de var(--p, 0%));
+    outline-offset: 6px; cursor: pointer; margin: 0;
+  }
+  .bar input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%;
+    background: #fff; border: 2px solid #cfd3dc; box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  }
+  .bar input[type=range]::-moz-range-thumb {
+    width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 2px solid #cfd3dc;
+  }
+  .time { font-size: 18px; color: #4a5060; white-space: nowrap; }
+  .vol svg { width: 28px; height: 28px; fill: #3b4252; }
+  .speed {
+    background: #5a6b86; color: #fff; font-size: 16px; padding: 6px 9px; border-radius: 8px; min-width: 38px;
+  }
+
+  .qhead { display: flex; align-items: center; gap: 14px; margin: 20px 0 16px; }
+  .qnum {
+    width: 50px; height: 50px; border-radius: 50%; flex: none;
+    background: var(--blue); color: #fff; font-weight: 700; font-size: 20px;
+    display: grid; place-items: center;
+  }
+  .qtitle { font-size: 24px; font-weight: 700; color: #2b2b2b; margin: 0; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    background: #fff; border-radius: 14px; min-height: 58px; padding: 8px 12px;
+    display: flex; align-items: center; gap: 14px; text-align: left; width: 100%;
+    font-size: 22px; transition: transform .12s, box-shadow .12s;
+    box-shadow: 0 0 0 1px transparent;
+  }
+  .opt { cursor: pointer; -webkit-user-select: text; user-select: text; }
+  .opt:hover:not(.locked) { transform: scale(1.012); box-shadow: 0 8px 24px rgba(40,50,90,.12); }
+  .opt.locked { cursor: default; }
+  .letter {
+    width: 40px; height: 40px; border-radius: 50%; flex: none;
+    background: #b8b8b8; color: #fff; font-size: 20px; font-weight: 500;
+    display: grid; place-items: center;
+  }
+  .opt.selected .letter { background: var(--blue); }
+  .opt.correct { box-shadow: 0 0 0 3px var(--green); }
+  .opt.correct .letter { background: var(--green); }
+  .opt.wrong { box-shadow: 0 0 0 3px var(--red); }
+  .opt.wrong .letter { background: var(--red); }
+  .opt .txt { flex: 1; }
+  .opt .vi { display: block; font-size: 18px; color: #4b5263; margin-top: var(--vi-gap); }
+
+  .transcript {
+    margin-top: 14px; padding: 14px 18px; background: #fff; border-radius: 14px;
+    font-size: 20px; line-height: 1.45;
+  }
+  .transcript .vi { color: #4b5263; font-size: 18px; margin-top: var(--vi-gap); }
+  .transcript .exp { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 18px; color: #3c4254; }
+  .transcript b { color: var(--green); }
+
+  .nav { display: flex; justify-content: space-between; margin-top: 16px; gap: 12px; }
+  .nav button {
+    background: #fff; border-radius: 12px; padding: 10px 22px; font-size: 18px; font-weight: 500; color: #3b4252;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .nav button:hover:not(:disabled) { background: var(--blue); color: #fff; }
+  .nav button:disabled { opacity: .4; cursor: not-allowed; }
+
+
+  /* ===== Ảnh câu hỏi (Part 1) ===== */
+  .pic { margin-top: 14px; background: #fff; border-radius: 14px; padding: 10px; text-align: center; }
+  .pic img { max-width: 100%; max-height: 340px; border-radius: 10px; display: block; margin: 0 auto; }
+  .pic .empty {
+    min-height: 120px; border: 2px dashed #b9bfd0; border-radius: 12px; display: grid; place-items: center;
+    color: var(--muted); font-size: 22px;
+  }
+  .pic .up {
+    margin-top: 12px; background: #eef0f6; border-radius: 10px; padding: 8px 18px; font-size: 18px; font-weight: 500; color: #3b4252;
+  }
+  .pic .up:hover { background: var(--blue); color: #fff; }
+
+  /* ===== Palette panel (ngăn kéo, mặc định đóng) ===== */
+  .panel {
+    position: absolute; top: 0; right: 0; bottom: 0; width: var(--panel-w); max-width: 100%;
+    background: var(--panel); color: #fff; z-index: 6;
+    display: flex; flex-direction: column; overflow-y: auto;
+    transform: translateX(100%); visibility: hidden;
+    transition: transform .22s ease, visibility 0s linear .22s;
+    box-shadow: -10px 0 30px rgba(0,0,0,.22);
+  }
+  .panel.open { transform: none; visibility: visible; transition: transform .22s ease; }
+  .panel-head { background: var(--blue-soft); display: flex; align-items: center; justify-content: center; position: relative; padding: 9px 36px; }
+  .panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; text-align: center; }
+  .panel-close { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; font-size: 22px; line-height: 1; color: #fff; }
+  .panel-close:hover { background: rgba(255,255,255,.2); }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--panel-gap); padding: 12px; }
+  .grid button { height: var(--panel-cell-h); border-radius: 6px; background: var(--panel-btn); color: #fff; font-size: var(--panel-cell-font); font-weight: 500; }
+  .grid button:hover { background: #38445f; }
+  .grid button.current { outline: 2px solid var(--blue-soft); outline-offset: 1px; }
+  .grid button.answered { background: #46506a; }
+  .grid button.correct { background: var(--green); }
+  .grid button.wrong { background: var(--red); }
+  .toggle-row { margin-top: auto; padding: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; gap: 10px; }
+  .switch { position: relative; width: 48px; height: 24px; flex: none; }
+  .switch input { opacity: 0; width: 100%; height: 100%; position: absolute; inset: 0; margin: 0; cursor: pointer; z-index: 2; }
+  .switch .track { position: absolute; inset: 3px 0; background: #cfd3dc; border-radius: 20px; transition: .2s; }
+  .switch .knob { position: absolute; top: 0; left: 0; width: 24px; height: 24px; border-radius: 50%; background: #1a8cff; transition: .2s; }
+  .switch input:checked ~ .knob { left: 24px; }
+  /* màn hình rộng: đẩy nội dung sang trái khi mở bảng */
+  @media (min-width: 1101px) { .layout.with-panel .main { margin-right: var(--panel-w); } }
+
+  /* ===== Thanh dưới cùng ===== */
+  .bottombar {
+    flex: none; height: 52px; background: var(--panel); display: flex; justify-content: flex-end; align-items: center;
+    padding: 0 22px; gap: 12px; position: relative; z-index: 7;
+  }
+  .bottombar { justify-content: space-between; }
+  .adm { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 15px; color: #cbd2e3; }
+  .adm button { background: #2a3347; color: #fff; padding: 8px 16px; border-radius: 10px; font-size: 15px; font-weight: 500; flex: none; }
+  .adm button:hover { background: #38445f; }
+  .adm span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .adm .ok { color: #7ee787; } .adm .warn { color: #ffd166; } .adm .err { color: #ff8a8a; }
+  .toggle-panel { white-space: nowrap; flex: none; }
+  @media (max-width: 760px) { .bottombar { padding: 0 10px; gap: 8px; } .adm { flex: 1; } .adm button, .toggle-panel { font-size: 14px; padding: 7px 12px; } }
+  .toggle-panel {
+    background: var(--blue); color: #fff; font-size: 17px; font-weight: 500; padding: 8px 20px; border-radius: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toggle-panel:hover { background: #0a7bf0; }
+  .toggle-panel .arr { display: inline-block; transition: transform .2s; }
+  .toggle-panel[aria-expanded="false"] .arr { transform: rotate(180deg); }
+
+  /* ===== Nút phát/dừng nổi (luôn hiện khi cuộn) ===== */
+  .float-play {
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    width: 60px; height: 60px; border-radius: 50%; z-index: 30;
+    background: var(--blue); color: #fff; display: grid; place-items: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,.28);
+  }
+  .float-play:hover { background: #0a7bf0; }
+  .float-play svg { width: 28px; height: 28px; fill: #fff; }
+
+  /* ===== Watermark chéo (2/3 bên phải màn hình, không chặn thao tác) ===== */
+  .watermark {
+    position: fixed; top: var(--topbar-h); bottom: 52px; left: 33.333vw; right: 0;
+    display: grid; place-items: center; overflow: hidden;
+    pointer-events: none; -webkit-user-select: none; user-select: none; z-index: 4;
+  }
+  .watermark span {
+    font-size: var(--wm-size); font-weight: 900; letter-spacing: .04em; line-height: 1; white-space: nowrap;
+    color: var(--wm-color); transform: rotate(var(--wm-angle));
+  }
+
+  /* ===== Result dialog ===== */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15,20,35,.55); display: none; place-items: center; z-index: 20; padding: 20px;
+  }
+  .overlay.open { display: grid; }
+  .dialog { background: #fff; border-radius: 22px; padding: 36px 40px; max-width: 520px; width: 100%; text-align: center; }
+  .dialog h3 { margin: 0 0 6px; font-size: 28px; }
+  .dialog .score { font-size: 64px; font-weight: 700; color: var(--blue); margin: 10px 0; }
+  .dialog p { margin: 4px 0; font-size: 20px; color: #4b5263; }
+  .dialog .row { display: flex; gap: 12px; margin-top: 26px; justify-content: center; flex-wrap: wrap; }
+  .dialog .row button { padding: 12px 24px; font-size: 20px; border-radius: 12px; background: #eef0f6; font-weight: 500; }
+  .dialog .row button.primary { background: var(--blue); color: #fff; }
+
+  @media (max-width: 1100px) {
+  }
+  @media (max-width: 760px) {
+    .topbar { padding: 0 10px; grid-template-columns: 1fr auto; }
+    .topbar > div:first-child { display: none; }
+    .topbar .center { justify-content: flex-start; }
+    .top-admin { font-size: 13px; padding: 6px 10px; }
+    .main { padding: 24px 14px 50px; }
+    :root { --wm-size: 12vw; }
+    .float-play { width: 48px; height: 48px; right: 10px; opacity: .9; }
+    .float-play svg { width: 22px; height: 22px; }
+    .player { height: auto; padding: 10px; flex-wrap: wrap; gap: 8px; }
+    .circ { width: 46px; height: 46px; font-size: 14px; }
+    .circ svg { width: 20px; height: 20px; }
+    .bar { order: 5; flex-basis: 100%; margin: 4px 0; }
+    .time { font-size: 15px; }
+    .vol svg { width: 26px; height: 26px; }
+    .speed { font-size: 15px; }
+    .qhead { margin: 24px 0; gap: 12px; }
+    .qnum { width: 52px; height: 52px; font-size: 20px; }
+    .qtitle { font-size: 20px; }
+    .opt { font-size: 19px; min-height: 60px; gap: 12px; border-radius: 14px; }
+    .opt .vi { font-size: 16px; }
+    .letter { width: 40px; height: 40px; font-size: 20px; }
+    .transcript { font-size: 19px; } .transcript .vi { font-size: 17px; }
+    .panel { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div></div>
+  <div class="center">
+    <span>Question</span>
+    <button class="qcircle" id="btnPalette" aria-label="Mở danh sách câu hỏi"><span id="curIdx">1</span></button>
+    <span>of <span id="totalQ">50</span></span>
+  </div>
+  <div class="topright"><button class="top-admin" id="btnAdmin" type="button">Mở trang đáp án</button></div>
+</header>
+
+<div class="layout">
+  <main class="main" id="main">
+    <div class="wrap">
+      <div class="player">
+        <button class="circ" id="btnBack" aria-label="Lùi 10 giây">10s</button>
+        <button class="circ" id="btnPlay" aria-label="Phát / tạm dừng"></button>
+        <div class="bar"><input type="range" id="seek" min="0" max="100" step="0.1" value="0" aria-label="Tua"></div>
+        <span class="time"><span id="tCur">00:00</span> / <span id="tDur">00:00</span></span>
+        <button class="vol" id="btnVol" aria-label="Âm lượng"></button>
+        <button class="speed" id="btnSpeed" aria-label="Tốc độ phát">1.0</button>
+      </div>
+
+      <div class="pic" id="pic" hidden>
+        <div id="picBox"></div>
+        <button class="up" id="btnUpload" type="button">Tải ảnh lên</button>
+        <input type="file" id="fileUpload" accept="image/*" hidden>
+      </div>
+
+      <div class="qhead">
+        <div class="qnum" id="qNum">1</div>
+        <h1 class="qtitle" id="qPrompt">Select the best response to the question.</h1>
+      </div>
+
+      <div class="options" id="options"></div>
+      <div class="transcript" id="transcript" hidden></div>
+
+      <div class="nav">
+        <button id="btnPrev">&larr; Câu trước</button>
+        <button id="btnNext">Câu sau &rarr;</button>
+      </div>
+    </div>
+  </main>
+
+  <aside class="panel" id="panel" aria-hidden="true">
+    <div class="panel-head">
+      <h2 id="panelTitle">Listening</h2>
+      <button class="panel-close" id="btnPanelClose" aria-label="Đóng bảng câu hỏi">&times;</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <label class="toggle-row">
+      <span>Xem đáp án sau khi chọn</span>
+      <span class="switch">
+        <input type="checkbox" id="showAns" checked>
+        <span class="track"></span><span class="knob"></span>
+      </span>
+    </label>
+  </aside>
+</div>
+
+<footer class="bottombar">
+  <div class="adm">
+    <span id="adminStatus">Chưa kết nối trang đáp án</span>
+  </div>
+  <button class="toggle-panel" id="btnTogglePanel" aria-expanded="true" aria-controls="panel">
+    <span class="arr">&#9660;</span><span id="togLabel">Ẩn bảng câu hỏi</span>
+  </button>
+</footer>
+
+<button class="float-play" id="btnFloatPlay" type="button" aria-label="Phát / dừng âm thanh" title="Phát / dừng"></button>
+<div class="watermark" aria-hidden="true"><span id="wmText">PLAYTOEIC</span></div>
+
+<script>
+/* =====================================================================
+   1) CẤU HÌNH
+   ===================================================================== */
+const CONFIG = {
+  // CÁCH 1 (nhanh): điền link GỐC, file tự ghép thành  BASE + số câu + đuôi  (vd: .../1.mp3)
+  // CÁCH 2: dán link đầy đủ từng câu vào AUDIO_URLS / IMAGE_URLS bên dưới (ưu tiên hơn cách 1).
+  AUDIO_BASE: "",
+  AUDIO_EXT: ".mp3",
+
+  // Tương tự cho ảnh Part 1 (câu 1-6): IMAGE_BASE + số câu + IMAGE_EXT
+  IMAGE_BASE: "",
+  IMAGE_EXT: ".jpg",
+
+  FIRST: 1,          // số câu đầu tiên
+  LAST: 31,          // số câu cuối cùng (file nghe 1 → 31)
+  PANEL_TITLE: "Listening",
+  PROMPT: "Select the best response to the question.",
+  // Số hiển thị trong "Question n of N". Để null = tự lấy tổng số câu.
+  TOTAL_LABEL: null
+};
+
+/* =====================================================================
+   LINK ÂM THANH & ẢNH – dán link Cloudinary đầy đủ vào từng câu
+   (để trống thì dùng AUDIO_BASE / IMAGE_BASE ở trên)
+   ===================================================================== */
+const AUDIO_URLS = {
+  1: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700109/E26-T02-01_cqjb7u.mp3",
+  2: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700114/E26-T02-02_flddxu.mp3",
+  3: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700197/E26-T02-03_ylxic4.mp3",
+  4: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700197/E26-T02-04_ff6jlx.mp3",
+  5: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700197/E26-T02-05_guevx0.mp3",
+  6: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700199/E26-T02-06_re3mj8.mp3",
+  7: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700198/E26-T02-07_puubkv.mp3",
+  8: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700198/E26-T02-08_hhhp9g.mp3",
+  9: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700198/E26-T02-09_ro1px4.mp3",
+  10: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700198/E26-T02-10_kdd4v5.mp3",
+  11: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700199/E26-T02-11_ub1wiw.mp3",
+  12: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700199/E26-T02-12_pex169.mp3",
+  13: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700199/E26-T02-13_omdsec.mp3",
+  14: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700199/E26-T02-14_xjgmkb.mp3",
+  15: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700199/E26-T02-14_xjgmkb.mp3",
+  16: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700201/E26-T02-16_gsesgq.mp3",
+  17: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700201/E26-T02-17_c3t63k.mp3",
+  18: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700202/E26-T02-18_apd2sq.mp3",
+  19: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700202/E26-T02-19_htfpwn.mp3",
+  20: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700203/E26-T02-20_h0ytse.mp3",
+  21: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700204/E26-T02-21_vhxwxp.mp3",
+  22: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700204/E26-T02-22_v1k7ru.mp3",
+  23: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700205/E26-T02-23_gqlybv.mp3",
+  24: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700205/E26-T02-24_lm3tyn.mp3",
+  25: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700207/E26-T02-25_nwu5zo.mp3",
+  26: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700207/E26-T02-25_nwu5zo.mp3",
+  27: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700218/E26-T02-27_b9sz8d.mp3",
+  28: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700219/E26-T02-28_t53bpu.mp3",
+  29: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700219/E26-T02-29_umubkc.mp3",
+  30: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700197/E26-T02-30_wmum8k.mp3",
+  31: "https://res.cloudinary.com/do9hddivz/video/upload/v1793700041/E26-T02-31_vy4skk.mp3"
+};
+ 
+const IMAGE_URLS = {
+  1: "https://res.cloudinary.com/do9hddivz/image/upload/v1793700260/21_wcpflt.png",
+  2: "https://res.cloudinary.com/do9hddivz/image/upload/v1793700260/22_brvglk.png",
+  3: "https://res.cloudinary.com/do9hddivz/image/upload/v1793700261/23_y3etci.png",
+  4: "https://res.cloudinary.com/do9hddivz/image/upload/v1793700261/24_n1w8xo.png",
+  5: "https://res.cloudinary.com/do9hddivz/image/upload/v1793700275/25_rah4xe.png",
+  6: "https://res.cloudinary.com/do9hddivz/image/upload/v1793700259/26_fw5sup.png"
+};
+/* =====================================================================
+   KẾT NỐI TRANG ĐÁP ÁN (ADMIN) – mỗi đáp án chọn ở đây tự điền vào mục
+   "2. Thiết lập Đáp án đúng": ô trống đầu tiên, đủ hết thì không điền nữa.
+   Hai trang phải cùng tên miền (cùng playtoeic.github.io).
+   ===================================================================== */
+const ADMIN = {
+  ENABLED: true,
+  URL: "https://playtoeic.github.io/adminnghedoc/adminnghechonindex.html",
+  NAME: "playtoeic_admin",
+  // Nếu không tự tìm được ô, điền selector CSS của các ô đáp án, ví dụ: "#answerKey input"
+  CELL_SELECTOR: ""
+};
+const IMAGES = {};   // ảnh tải lên tạm thời trong lúc mở trang (không cần sửa)
+
+/* =====================================================================
+   2) NỘI DUNG CÂU HỎI  (điền ở đây, key = số câu)
+   - A/B/C        : nội dung đáp án tiếng Anh
+   - viA/viB/viC  : dịch tiếng Việt (không bắt buộc)
+   - script       : câu hỏi trong file nghe
+   - viScript     : dịch câu hỏi
+   - answer       : "A" | "B" | "C"  (| "D" nếu có)
+   - explain      : giải thích (không bắt buộc)
+   - audio        : link riêng cho 1 câu (không bắt buộc, ghi đè AUDIO_BASE)
+   - pic: true    : câu có hình (Part 1) – ảnh lấy từ IMAGES bên dưới hoặc bấm "Tải ảnh lên"
+   - prompt       : đề bài riêng cho câu (không bắt buộc, ghi đè CONFIG.PROMPT)
+   ===================================================================== */
+const DATA = {
+"1": {
+"prompt": "Select the statement that best describes the picture.",
+"pic": true,
+"A": "A man is looking at some merchandise.",
+"B": "A man is standing near a river.",
+"C": "A man is opening a window.",
+"D": "A man is closing a door.",
+"viA": "Một người đàn ông đang nhìn một số hàng hóa.",
+"viB": "Một người đàn ông đang đứng gần một con sông.",
+"viC": "Một người đàn ông đang mở cửa sổ.",
+"viD": "Một người đàn ông đang đóng cửa.",
+"answer": "B"
+},
+"2": {
+"prompt": "Select the statement that best describes the picture.",
+"pic": true,
+"A": "Some chairs are stacked in a corner.",
+"B": "Some books are arranged on a shelf.",
+"C": "Some lights are being installed.",
+"D": "Bicycles are lined up along a wall.",
+"viA": "Một số chiếc ghế được xếp chồng ở một góc.",
+"viB": "Một số cuốn sách được sắp xếp trên kệ.",
+"viC": "Một số đèn đang được lắp đặt.",
+"viD": "Những chiếc xe đạp được xếp dọc theo bức tường.",
+"answer": "D"
+},
+"3": {
+"prompt": "Select the statement that best describes the picture.",
+"pic": true,
+"A": "A woman is painting a wall.",
+"B": "A woman is leaning against a railing.",
+"C": "A woman is walking up some stairs.",
+"D": "A woman is cleaning a floor.",
+"viA": "Một người phụ nữ đang sơn tường.",
+"viB": "Một người phụ nữ đang tựa người vào lan can.",
+"viC": "Một người phụ nữ đang bước lên cầu thang.",
+"viD": "Một người phụ nữ đang lau sàn nhà.",
+"answer": "B"
+},
+"4": {
+"prompt": "Select the statement that best describes the picture.",
+"pic": true,
+"A": "A vehicle is parked next to a building.",
+"B": "A vehicle is being loaded with boxes.",
+"C": "A bridge is being repaired.",
+"D": "Traffic is stopped at an intersection.",
+"viA": "Một chiếc xe đang đỗ cạnh một tòa nhà.",
+"viB": "Một chiếc xe đang được chất các hộp lên.",
+"viC": "Một cây cầu đang được sửa chữa.",
+"viD": "Giao thông đang dừng lại ở ngã tư.",
+"answer": "A"
+},
+"5": {
+"prompt": "Select the statement that best describes the picture.",
+"pic": true,
+"A": "People are boarding a bus.",
+"B": "People are sitting on park benches.",
+"C": "People are walking in a park.",
+"D": "People are crossing a street.",
+"viA": "Mọi người đang lên xe buýt.",
+"viB": "Mọi người đang ngồi trên ghế đá công viên.",
+"viC": "Mọi người đang đi dạo trong công viên.",
+"viD": "Mọi người đang băng qua đường.",
+"answer": "C"
+},
+"6": {
+"prompt": "Select the statement that best describes the picture.",
+"pic": true,
+"A": "One of the cars is stopped at a stop sign.",
+"B": "Some tires are stacked against a building.",
+"C": "Some vehicles are being washed.",
+"D": "A motorcycle is going through a gate.",
+"viA": "Một trong những chiếc xe đang dừng ở biển báo dừng",
+"viB": "Một số lốp xe được xếp chồng cạnh một tòa nhà",
+"viC": "Một số xe đang được rửa",
+"viD": "Một chiếc xe máy đang đi qua một cổng",
+"answer": "A"
+},
+"7": {
+"script": "Where did you put the invoice from Stanson Incorporated?",
+"A": "On your desk.",
+"B": "No, not yet.",
+"C": "The post office is crowded today.",
+"viScript": "Bạn đã để hóa đơn từ công ty Stanson Incorporated ở đâu?",
+"viA": "Ở trên bàn làm việc của bạn.",
+"viB": "Chưa, chưa có.",
+"viC": "Bưu điện hôm nay rất đông.",
+"answer": "A"
+},
+"8": {
+"script": "Is the inspector coming this afternoon or tomorrow morning?",
+"A": "The exterior light isn’t working.",
+"B": "He’ll be here tomorrow.",
+"C": "I’ll take the next right turn.",
+"viScript": "Thanh tra viên sẽ đến vào chiều nay hay sáng mai?",
+"viA": "Đèn bên ngoài không hoạt động.",
+"viB": "Ông ấy sẽ ở đây vào ngày mai.",
+"viC": "Tôi sẽ rẽ phải ở khúc rẽ tiếp theo.",
+"answer": "B"
+},
+"9": {
+"script": "What’s the total cost to remodel the office lobby?",
+"A": "The view from this window is great.",
+"B": "Over 50,000 dollars.",
+"C": "No, a sofa and table.",
+"viScript": "Tổng chi phí để cải tạo sảnh văn phòng là bao nhiêu?",
+"viA": "Góc nhìn từ cửa sổ này rất tuyệt.",
+"viB": "Hơn 50.000 đô la.",
+"viC": "Không, một chiếc ghế sofa và một chiếc bàn.",
+"answer": "C"
+},
+"10": {
+"script": "Are you getting the same type of desk or a different one?",
+"A": "The same type.",
+"B": "It’s conveniently located.",
+"C": "I can pick it up for you.",
+"viScript": "Bạn sẽ lấy cùng loại bàn làm việc hay loại khác?",
+"viA": "Cùng loại.",
+"viB": "Nó nằm ở vị trí thuận tiện.",
+"viC": "Tôi có thể lấy nó giúp bạn.",
+"answer": "A"
+},
+"11": {
+"script": "We’re taking the clients to the theater this evening.",
+"A": "He already ate.",
+"B": "From Australia.",
+"C": "I’ll reserve a taxi.",
+"viScript": "Tối nay chúng ta sẽ đưa khách hàng đến nhà hát.",
+"viA": "Anh ấy đã ăn rồi.",
+"viB": "Đến từ Úc.",
+"viC": "Tôi sẽ đặt trước một chiếc taxi.",
+"answer": "C"
+},
+"12": {
+"script": "When is your budget report due?",
+"A": "It was too expensive.",
+"B": "I don’t need one.",
+"C": "By Tuesday at the latest.",
+"viScript": "Khi nào thì báo cáo ngân sách của bạn đến hạn?",
+"viA": "Nó quá đắt.",
+"viB": "Tôi không cần một cái.",
+"viC": "Trễ nhất là vào thứ Ba.",
+"answer": "C"
+},
+"13": {
+"script": "Who can I talk to about getting a membership at this fitness center?",
+"A": "I can help you with that.",
+"B": "A monthly bill.",
+"C": "Some new workout equipment.",
+"viScript": "Tôi có thể trao đổi với ai về việc đăng ký thẻ hội viên tại trung tâm thể hình này?",
+"viA": "Tôi có thể giúp bạn việc đó.",
+"viB": "Hóa đơn hằng tháng.",
+"viC": "Một số thiết bị tập thể dục mới.",
+"answer": "A"
+},
+"14": {
+"script": "Are you planning to buy a house in the city?",
+"A": "I don’t want to move.",
+"B": "A housecleaning company.",
+"C": "I’ll be waiting at the post office.",
+"viScript": "Bạn có kế hoạch mua nhà ở thành phố không?",
+"viA": "Tôi không muốn chuyển đi.",
+"viB": "Một công ty dọn dẹp nhà cửa.",
+"viC": "Tôi sẽ đợi ở bưu điện.",
+"answer": "A"
+},
+"15": {
+"script": "How did you decide on a venue for the fund-raising event?",
+"A": "A small contribution.",
+"B": "I got a recommendation from a friend.",
+"C": "To buy books for the library.",
+"viScript": "Làm thế nào bạn quyết định được địa điểm cho sự kiện gây quỹ?",
+"viA": "Một khoản đóng góp nhỏ.",
+"viB": "Tôi nhận được lời giới thiệu từ một người bạn.",
+"viC": "Để mua sách cho thư viện.",
+"answer": "B"
+},
+"16": {
+"script": "Could you help Ms. Ishida update the expense reports?",
+"A": "It’s an electric vehicle.",
+"B": "This restaurant is expensive.",
+"C": "I’ll have time after my meeting.",
+"viScript": "Bạn có thể giúp cô Ishida cập nhật các báo cáo chi phí được không?",
+"viA": "Đó là một chiếc xe điện.",
+"viB": "Nhà hàng này đắt đỏ.",
+"viC": "Tôi sẽ có thời gian rảnh sau cuộc họp.",
+"answer": "C"
+},
+"17": {
+"script": "The sales representatives really appreciated the training we led.",
+"A": "Yes, they seemed to find it helpful.",
+"B": "The new transportation center nearby.",
+"C": "No, but there is a manual online.",
+"viScript": "Các đại diện bán hàng thực sự đánh giá cao buổi đào tạo mà chúng ta đã dẫn dắt.",
+"viA": "Vâng, họ có vẻ thấy nó rất hữu ích.",
+"viB": "Trung tâm giao thông mới ở gần đây.",
+"viC": "Không, nhưng có một bản hướng dẫn trực tuyến.",
+"answer": "A"
+},
+"18": {
+"script": "Do you know who was promoted to senior director?",
+"A": "I received my promotional gift yesterday.",
+"B": "It hasn’t been announced yet.",
+"C": "I’ve seen that film.",
+"viScript": "Bạn có biết ai đã được thăng chức lên giám đốc cao cấp không?",
+"viA": "Tôi đã nhận được quà khuyến mãi vào ngày hôm qua.",
+"viB": "Điều đó vẫn chưa được thông báo.",
+"viC": "Tôi đã xem bộ phim đó rồi.",
+"answer": "B"
+},
+"19": {
+"script": "Isn’t the registration deadline tomorrow?",
+"A": "Here’s a map that you can use.",
+"B": "My office is on the ninth floor.",
+"C": "No, it’s next week.",
+"viScript": "Hạn chót đăng ký không phải là ngày mai sao?",
+"viA": "Đây là bản đồ mà bạn có thể sử dụng.",
+"viB": "Văn phòng của tôi ở tầng 9.",
+"viC": "Không, là tuần sau.",
+"answer": "C"
+},
+"20": {
+"script": "Would you like some help installing that new software?",
+"A": "No, I’m sure we sent it out yesterday.",
+"B": "He can type very fast.",
+"C": "Thanks, but I know how to do it.",
+"viScript": "Bạn có cần giúp đỡ cài đặt phần mềm mới đó không?",
+"viA": "Không, tôi chắc chắn chúng ta đã gửi nó đi từ hôm qua.",
+"viB": "Anh ấy có thể đánh máy rất nhanh.",
+"viC": "Cảm ơn, nhưng tôi biết cách làm rồi.",
+"answer": "C"
+},
+"21": {
+"script": "Our factory makes the best cookies in the city.",
+"A": "A cup of sugar.",
+"B": "Aren’t they delicious?",
+"C": "He worked an afternoon shift.",
+"viScript": "Nhà máy của chúng tôi làm ra những chiếc bánh quy ngon nhất trong thành phố.",
+"viA": "Một cốc đường.",
+"viB": "Chúng không phải rất ngon sao?",
+"viC": "Anh ấy đã làm ca chiều.",
+"answer": "B"
+},
+"22": {
+"script": "The fruit market is still selling mangoes, isn’t it?",
+"A": "No thanks—I don’t need anything.",
+"B": "There’s a waiting area in the lobby.",
+"C": "Yes, I bought some there yesterday.",
+"viScript": "Chợ trái cây vẫn đang bán xoài, đúng không?",
+"viA": "Không, cảm ơn — tôi không cần gì cả.",
+"viB": "Có một khu vực chờ ở sảnh.",
+"viC": "Đúng vậy, tôi đã mua một ít ở đó ngày hôm qua.",
+"answer": "C"
+},
+"23": {
+"script": "Why are you staying in the office for lunch?",
+"A": "Because it is raining.",
+"B": "No, they weren’t.",
+"C": "Just a salad and soup, please.",
+"viScript": "Tại sao bạn lại ở lại văn phòng ăn trưa?",
+"viA": "Bởi vì trời đang mưa.",
+"viB": "Không, họ đã không.",
+"viC": "Xin vui lòng cho chỉ súp và salad.",
+"answer": "A"
+},
+"24": {
+"script": "How did the company basketball team play last night?",
+"A": "Sure, I’ll have a few.",
+"B": "How can I sign up?",
+"C": "The game was canceled.",
+"viScript": "Đội bóng rổ của công ty đã thi đấu như thế nào tối qua?",
+"viA": "Chắc chắn rồi, tôi sẽ lấy một ít.",
+"viB": "Làm cách nào tôi có thể đăng ký?",
+"viC": "Trận đấu đã bị hủy bỏ.",
+"answer": "C"
+},
+"25": {
+"script": "Isn’t our department’s quarterly report supposed to be sent out today?",
+"A": "No, he drinks coffee.",
+"B": "There’s a lot of information to include.",
+"C": "Some office supplies.",
+"viScript": "Báo cáo quý của bộ phận chúng ta không phải dự kiến được gửi đi hôm nay sao?",
+"viA": "Không, anh ấy uống cà phê.",
+"viB": "Có rất nhiều thông tin cần bao gồm.",
+"viC": "Một số dụng cụ văn phòng.",
+"answer": "B"
+},
+"26": {
+"script": "Would you like a copy of the article I mentioned?",
+"A": "No, I’m not.",
+"B": "Yes, I’d appreciate that.",
+"C": "A Thursday morning appointment.",
+"viScript": "Bạn có muốn một bản sao của bài báo tôi đã đề cập không?",
+"viA": "Không, tôi không phải.",
+"viB": "Vâng, tôi rất trân trọng điều đó.",
+"viC": "Một cuộc hẹn vào sáng thứ Năm.",
+"answer": "B"
+},
+"27": {
+"script": "Did you decide on the design for the new logo?",
+"A": "There are so many good options.",
+"B": "Please adjust that sign by the door.",
+"C": "Maybe he’ll arrive today.",
+"viScript": "Bạn đã quyết định thiết kế cho logo mới chưa?",
+"viA": "Có quá nhiều lựa chọn tốt.",
+"viB": "Vui lòng điều chỉnh biển báo đó gần cửa.",
+"viC": "Có lẽ anh ấy sẽ đến vào hôm nay.",
+"answer": "B"
+},
+"28": {
+"script": "Our bookstore is having a sale today, isn’t it?",
+"A": "It’s only a small discount.",
+"B": "Sure, you can use my printer.",
+"C": "I really enjoyed that book.",
+"viScript": "Hiệu sách của chúng ta đang có chương trình giảm giá hôm nay, đúng không?",
+"viA": "Nó chỉ là một mức giảm giá nhỏ.",
+"viB": "Chắc chắn rồi, bạn có thể dùng máy in của tôi.",
+"viC": "Tôi thực sự thích cuốn sách đó.",
+"answer": "A"
+},
+"29": {
+"script": "Why haven’t the painters arrived yet?",
+"A": "The keys are in the desk drawer.",
+"B": "I heard that traffic is heavy this morning.",
+"C": "No, that’s all right.",
+"viScript": "Tại sao thợ sơn vẫn chưa đến?",
+"viA": "Chìa khóa ở trong ngăn kéo bàn.",
+"viB": "Tôi nghe nói sáng nay giao thông rất đông đúc.",
+"viC": "Không, không sao đâu.",
+"answer": "B"
+},
+"30": {
+"script": "Should I bring some flowers or some food to the party?",
+"A": "He’s right down the hall.",
+"B": "A few more hours.",
+"C": "Don’t you live next to a florist’s shop?",
+"viScript": "Tôi nên mang một ít hoa hay một ít đồ ăn đến bữa tiệc?",
+"viA": "Anh ấy ở ngay cuối hành lang.",
+"viB": "Thêm vài giờ nữa.",
+"viC": "Không phải bạn sống ngay cạnh một cửa hàng hoa sao?",
+"answer": "C"
+},
+"31": {
+"script": "The meeting can wait until tomorrow.",
+"A": "Did you bring an umbrella?",
+"B": "No, he wasn’t.",
+"C": "I’ll make sure the room is set up.",
+"viScript": "Cuộc họp có thể hoãn lại cho đến ngày mai.",
+"viA": "Bạn có mang theo ô không?",
+"viB": "Không, anh ấy đã không.",
+"viC": "Tôi sẽ đảm bảo phòng họp được chuẩn bị sẵn sàng.",
+"answer": "C"
+}
+};
+
+/* =====================================================================
+   3) LOGIC (không cần sửa)
+   ===================================================================== */
+const LETTERS = ["A", "B", "C", "D"];
+const questions = [];
+for (let n = CONFIG.FIRST; n <= CONFIG.LAST; n++) {
+  questions.push(Object.assign({ number: n }, DATA[n] || {}));
+}
+
+const state = { i: 0, picks: {}, submitted: false, helpOpen: false };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (s) => { s = Math.max(0, Math.floor(s || 0)); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+const ICON_VOL = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+const ICON_MUTE = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13 3 3-3 1.4 1.4-3 3 3 3L19 18l-3-3-3 3-1.4-1.4 3-3-3-3L13 9l3 3z"/></svg>';
+
+function setPlayIcon(playing) {
+  const i = playing ? ICON_PAUSE : ICON_PLAY;
+  $("btnPlay").innerHTML = i;
+  $("btnFloatPlay").innerHTML = i;
+}
+const audio = new Audio();
+audio.preload = "auto";
+const speeds = [1.0, 1.25, 1.5, 0.75];
+let speedIdx = 0;
+
+function audioSrc(q) {
+  if (q.audio) return q.audio;
+  if (AUDIO_URLS[q.number]) return AUDIO_URLS[q.number];
+  return CONFIG.AUDIO_BASE ? CONFIG.AUDIO_BASE + q.number + CONFIG.AUDIO_EXT : "";
+}
+function imageSrc(q) {
+  if (IMAGES[q.number]) return IMAGES[q.number];
+  if (IMAGE_URLS[q.number]) return IMAGE_URLS[q.number];
+  return CONFIG.IMAGE_BASE ? CONFIG.IMAGE_BASE + q.number + CONFIG.IMAGE_EXT : "";
+}
+function optionKeys(q) {
+  return LETTERS.filter((L) => L !== "D" || q.D !== undefined);
+}
+function isRevealed(q) {
+  return state.submitted || (state.picks[q.number] && $("showAns").checked) || state.helpOpen;
+}
+
+function render() {
+  const q = questions[state.i];
+  $("curIdx").textContent = state.i + 1;
+  $("totalQ").textContent = CONFIG.TOTAL_LABEL ?? questions.length;
+  $("qNum").textContent = q.number;
+  $("qPrompt").textContent = q.prompt || CONFIG.PROMPT;
+  renderPic(q);
+  $("panelTitle").textContent = CONFIG.PANEL_TITLE;
+
+  const picked = state.picks[q.number];
+  const reveal = isRevealed(q);
+  const locked = state.submitted || (picked && $("showAns").checked);
+
+  $("options").innerHTML = optionKeys(q).map((L) => {
+    let cls = "opt";
+    if (picked === L) cls += " selected";
+    if (reveal && q.answer) {
+      if (L === q.answer) cls += " correct";
+      else if (picked === L) cls += " wrong";
+    }
+    const text = reveal ? `<span class="txt">${esc(q[L] ?? "")}${q["vi" + L] ? `<span class="vi">${esc(q["vi" + L])}</span>` : ""}</span>` : `<span class="txt"></span>`;
+    return `<div class="${cls}${locked ? " locked" : ""}" data-l="${L}" role="button" tabindex="${locked ? -1 : 0}" aria-disabled="${locked ? "true" : "false"}"><span class="letter">${L}</span>${text}</div>`;
+  }).join("");
+
+  const tr = $("transcript");
+  if (reveal && (q.script || q.explain || q.answer)) {
+    tr.hidden = false;
+    tr.innerHTML =
+      (q.script ? `<div>${esc(q.script)}</div>` : "") +
+      (q.viScript ? `<div class="vi">${esc(q.viScript)}</div>` : "") +
+      (q.answer ? `<div class="exp">Đáp án đúng: <b>${esc(q.answer)}</b></div>` : "") +
+      (q.explain ? `<div class="exp" style="border:0;padding-top:0;margin-top:6px">${esc(q.explain)}</div>` : "");
+  } else {
+    tr.hidden = true; tr.innerHTML = "";
+  }
+
+  $("btnPrev").disabled = state.i === 0;
+  $("btnNext").disabled = state.i === questions.length - 1;
+  renderGrid();
+}
+
+function renderGrid() {
+  $("grid").innerHTML = questions.map((q, idx) => {
+    const p = state.picks[q.number];
+    let cls = "";
+    if (idx === state.i) cls += " current";
+    if (p) {
+      cls += " answered";
+      if (q.answer && ($("showAns").checked || state.submitted)) cls += p === q.answer ? " correct" : " wrong";
+    }
+    return `<button class="${cls.trim()}" data-i="${idx}">${q.number}</button>`;
+  }).join("");
+}
+
+function loadAudio(autoplay) {
+  const q = questions[state.i];
+  audio.pause();
+  const src = audioSrc(q);
+  if (src) audio.src = src; else audio.removeAttribute("src");
+  audio.playbackRate = speeds[speedIdx];
+  $("seek").value = 0; setProgress(0);
+  $("tCur").textContent = "00:00"; $("tDur").textContent = "00:00";
+  setPlayIcon(false);
+  if (autoplay && src) audio.play().catch(() => {});
+}
+
+function go(i, autoplay = true) {
+  state.i = Math.min(Math.max(i, 0), questions.length - 1);
+  state.helpOpen = false;
+  render();
+  loadAudio(autoplay);
+  $("main").scrollTo({ top: 0 });
+}
+
+function setProgress(pct) { $("seek").style.setProperty("--p", pct + "%"); }
+
+/* Player events */
+audio.addEventListener("loadedmetadata", () => { $("tDur").textContent = fmt(audio.duration); });
+audio.addEventListener("timeupdate", () => {
+  const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+  $("seek").value = pct; setProgress(pct);
+  $("tCur").textContent = fmt(audio.currentTime);
+});
+audio.addEventListener("play", () => { setPlayIcon(true); });
+audio.addEventListener("pause", () => { setPlayIcon(false); });
+audio.addEventListener("ended", () => { setPlayIcon(false); });
+audio.addEventListener("error", () => {
+  if (audio.getAttribute("src")) console.warn("Không tải được file nghe:", audio.src);
+});
+
+$("btnFloatPlay").onclick = () => $("btnPlay").click();
+$("btnPlay").onclick = () => { audio.paused ? audio.play().catch(() => {}) : audio.pause(); };
+$("btnBack").onclick = () => { audio.currentTime = Math.max(0, audio.currentTime - 10); };
+$("seek").oninput = (e) => {
+  if (audio.duration) audio.currentTime = (e.target.value / 100) * audio.duration;
+  setProgress(e.target.value);
+};
+$("btnVol").onclick = () => { audio.muted = !audio.muted; $("btnVol").innerHTML = audio.muted ? ICON_MUTE : ICON_VOL; };
+$("btnSpeed").onclick = () => {
+  speedIdx = (speedIdx + 1) % speeds.length;
+  audio.playbackRate = speeds[speedIdx];
+  $("btnSpeed").textContent = speeds[speedIdx].toFixed(speeds[speedIdx] % 1 === 0 ? 1 : 2);
+};
+
+/* Options */
+function pick(L) {
+  const q = questions[state.i];
+  if (state.submitted) return;
+  if (state.picks[q.number] && $("showAns").checked) return;
+  const firstPick = !state.picks[q.number];
+  state.picks[q.number] = L;
+  render();
+  if (firstPick) sendToAdmin(q.answer || "");   // bấm chọn chỉ để kích hoạt; gửi đi là đáp án ĐÚNG của câu
+  // Điểm gắn kết với trang khác: bắn sự kiện mỗi khi học sinh chọn đáp án
+  const ev = { type: "playtoeic-answer", number: q.number, index: state.i, picked: L,
+               answer: q.answer || null, correct: q.answer ? L === q.answer : null, total: questions.length };
+  try {
+    if (typeof window.onAnswerPicked === "function") window.onAnswerPicked(ev);
+    if (window.parent !== window) window.parent.postMessage(ev, "*");
+  } catch (err) { console.warn(err); }
+}
+$("options").addEventListener("click", (e) => {
+  const b = e.target.closest(".opt");
+  if (!b || b.classList.contains("locked")) return;
+  const sel = window.getSelection ? window.getSelection().toString().trim() : "";
+  if (sel) return;                       // đang bôi đen chữ thì không tính là bấm chọn
+  pick(b.dataset.l);
+});
+$("options").addEventListener("keydown", (e) => {
+  const b = e.target.closest(".opt");
+  if (b && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault(); e.stopPropagation();
+    if (!b.classList.contains("locked")) pick(b.dataset.l);
+  }
+});
+
+/* Navigation & panel */
+$("btnPrev").onclick = () => go(state.i - 1);
+$("btnNext").onclick = () => go(state.i + 1);
+function setPanel(open) {
+  $("panel").classList.toggle("open", open);
+  $("panel").setAttribute("aria-hidden", String(!open));
+  document.querySelector(".layout").classList.toggle("with-panel", open);
+  $("btnTogglePanel").setAttribute("aria-expanded", String(open));
+  $("togLabel").textContent = open ? "Ẩn bảng câu hỏi" : "Hiện bảng câu hỏi";
+}
+const togglePanel = () => setPanel(!$("panel").classList.contains("open"));
+$("btnPalette").onclick = togglePanel;
+$("btnTogglePanel").onclick = togglePanel;
+$("btnPanelClose").onclick = () => setPanel(false);
+$("grid").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (b) { go(+b.dataset.i); if (window.innerWidth <= 1100) setPanel(false); }
+});
+$("showAns").addEventListener("change", render);
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" && e.target.type === "range") return;
+  const k = e.key.toUpperCase();
+  if (["A", "B", "C", "D"].includes(k) && !e.ctrlKey && !e.metaKey) pick(k);
+  else if (e.key === "Escape") setPanel(false);
+  else if (e.key === "ArrowRight") go(state.i + 1);
+  else if (e.key === "ArrowLeft") go(state.i - 1);
+  else if (e.key === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); $("btnPlay").click(); }
+});
+
+/* Ảnh câu hỏi */
+function renderPic(q) {
+  const box = $("pic");
+  if (!q.pic) { box.hidden = true; return; }
+  box.hidden = false;
+  const src = imageSrc(q);
+  $("picBox").innerHTML = src
+    ? `<img src="${esc(src)}" alt="Hình câu ${q.number}">`
+    : `<div class="empty">Chưa có link ảnh câu ${q.number} (dán vào IMAGE_URLS)</div>`;
+  $("btnUpload").textContent = src ? "Đổi ảnh" : "Tải ảnh lên";
+}
+$("btnUpload").onclick = () => $("fileUpload").click();
+$("fileUpload").onchange = (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { IMAGES[questions[state.i].number] = r.result; renderPic(questions[state.i]); };
+  r.readAsDataURL(f);
+  e.target.value = "";
+};
+
+/* ---- Tìm & điền ô đáp án ở mục "2. Thiết lập Đáp án đúng" ---- */
+function adminNorm(s) {
+  return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").toLowerCase().replace(/\s+/g, " ");
+}
+function findAdminCells(doc) {
+  if (ADMIN.CELL_SELECTOR) return Array.from(doc.querySelectorAll(ADMIN.CELL_SELECTOR));
+  const TARGET = "thiet lap dap an dung";
+  let head = null;
+  if (doc.body) {
+    for (const el of doc.body.querySelectorAll("*")) {
+      if (/^(SCRIPT|STYLE)$/.test(el.tagName)) continue;
+      const t = adminNorm(el.textContent);
+      if (t.includes(TARGET) && t.length < TARGET.length + 30) head = el; // lấy phần tử sâu nhất
+    }
+  }
+  const heads = Array.from(doc.querySelectorAll("h1,h2,h3,h4,h5,h6"));
+  const nextHead = head && heads.find((h) => h !== head && !head.contains(h) && (head.compareDocumentPosition(h) & 4));
+  const BAD = /^(button|submit|reset|checkbox|radio|file|hidden|image|color|range|date|datetime-local|time|month|week)$/;
+  return Array.from(doc.querySelectorAll("input,select,textarea")).filter((el) => {
+    if (BAD.test(el.type) || el.disabled || el.readOnly) return false;
+    if (!(el.offsetWidth || el.offsetHeight || el.getClientRects().length)) return false;
+    const table = el.closest("table");
+    if (table && adminNorm(table.textContent).includes("hoc sinh")) return false; // bỏ ô trong bảng học sinh
+    if (head) {
+      if (!(head.compareDocumentPosition(el) & 4)) return false;                        // phải nằm sau tiêu đề mục 2
+      if (nextHead && !(nextHead.compareDocumentPosition(el) & 2)) return false;       // và trước tiêu đề mục kế tiếp
+      return true;
+    }
+    return el.tagName === "SELECT" || el.getAttribute("maxlength") === "1";            // không thấy tiêu đề: chỉ lấy ô 1 ký tự
+  });
+}
+function isEmptyCell(el) {
+  if (el.tagName === "SELECT") {
+    const o = el.options[el.selectedIndex];
+    return !el.value.trim() || (el.selectedIndex <= 0 && (!o || /^[-–—\s]*$|chon|select/.test(adminNorm(o.text))));
+  }
+  return !el.value.trim();
+}
+function setCell(el, L) {
+  const win = el.ownerDocument.defaultView;
+  if (el.tagName === "SELECT") {
+    const opt = Array.from(el.options).find((o) => o.value.trim().toUpperCase() === L || o.text.trim().toUpperCase() === L);
+    if (!opt) return false;
+    el.value = opt.value;
+  } else {
+    const proto = el.tagName === "TEXTAREA" ? win.HTMLTextAreaElement.prototype : win.HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, "value").set.call(el, L);
+  }
+  ["input", "change", "keyup"].forEach((t) => el.dispatchEvent(new win.Event(t, { bubbles: true })));
+  return true;
+}
+/* Quy tắc: điền vào ô trống đầu tiên; nếu đã điền hết thì không điền nữa */
+function fillFirstEmpty(doc, L) {
+  const cells = findAdminCells(doc);
+  if (!cells.length) return { status: "nocells", total: 0, filled: 0 };
+  const idx = cells.findIndex(isEmptyCell);
+  if (idx === -1) return { status: "full", total: cells.length, filled: cells.length };
+  const ok = setCell(cells[idx], L);
+  return { status: ok ? "filled" : "fail", index: idx + 1, total: cells.length, filled: cells.filter((c) => !isEmptyCell(c)).length };
+}
+
+let adminWin = null;
+function setAdminStatus(msg, kind) {
+  const s = $("adminStatus"); s.textContent = msg; s.className = kind || "";
+}
+function reportFill(r, letter) {
+  if (r.status === "filled") setAdminStatus(`Đã điền đáp án đúng${letter ? " “" + letter + "”" : ""} vào ô ${r.index}/${r.total} (đã có ${r.filled}/${r.total})`, "ok");
+  else if (r.status === "full") setAdminStatus(`Bảng đáp án đã đủ ${r.total}/${r.total} ô – không điền thêm`, "warn");
+  else if (r.status === "nocells") setAdminStatus("Không thấy ô nhập ở mục 2 (trang chưa tải xong hoặc cần điền CELL_SELECTOR)", "err");
+  else setAdminStatus("Không điền được ô này (kiểu ô không nhận chữ cái)", "err");
+}
+function connectAdmin() {
+  const w = window.open("", ADMIN.NAME);           // lấy lại cửa sổ cũ nếu đang mở, không thì mở mới
+  if (!w) { setAdminStatus("Trình duyệt chặn cửa sổ mới – hãy cho phép popup", "err"); return; }
+  let blank = false;
+  try { blank = w.location.href === "about:blank"; } catch (e) { blank = false; }
+  if (blank) w.location.href = ADMIN.URL;
+  adminWin = w;
+  setAdminStatus("Đã kết nối – chọn đáp án ở đây, đáp án sẽ tự vào trang đáp án", "ok");
+}
+function sendToAdmin(L) {
+  if (!ADMIN.ENABLED) return;
+  if (!/^[A-D]$/.test(L || "")) { setAdminStatus("Câu này chưa có đáp án đúng trong dữ liệu nên không gửi sang trang đáp án", "warn"); return; }
+  if (!adminWin || adminWin.closed) { setAdminStatus("Chưa mở trang đáp án – bấm “Mở trang đáp án” rồi chọn lại", "warn"); return; }
+  let doc = null;
+  try { doc = adminWin.document; void doc.body; } catch (e) { doc = null; }   // khác tên miền thì không truy cập được
+  if (doc) { reportFill(fillFirstEmpty(doc, L), L); return; }
+  try { adminWin.postMessage({ type: "playtoeic-answer", letter: L }, "*"); setAdminStatus("Đã gửi cho trang đáp án (khác tên miền, cần gắn file admin-nhan-dap-an.js)", "warn"); }
+  catch (e) { setAdminStatus("Không gửi được sang trang đáp án", "err"); }
+}
+window.addEventListener("message", (e) => {
+  if (e.source === adminWin && e.data && e.data.type === "playtoeic-fill-result") reportFill(e.data);
+});
+$("btnAdmin").onclick = connectAdmin;
+window.debugAdminCells = () => {
+  const doc = adminWin && adminWin.document;
+  const cells = doc ? findAdminCells(doc) : [];
+  console.log("Số ô tìm thấy:", cells.length, cells);
+  return cells;
+};
+
+/* Khởi động */
+setPlayIcon(false);
+$("btnVol").innerHTML = ICON_VOL;
+setPanel(false);
+go(0, false);
+</script>
+</body>
+</html>
